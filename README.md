@@ -44,10 +44,10 @@ Lightweight inventory tracker for 3D printer filament. Frontend is a static Vite
 3. Import into D1:
    - `npx wrangler d1 execute filament-tracker --file /tmp/filaments.sql`
 
-## Import using your current local CSV
+## Import from a local CSV file
 1. Generate SQL from your existing file:
-   - `cd /Users/henrywong/Documents/Personal\ Dev/Filament\ Tracker/backend`
-   - `node scripts/csv_to_sql.mjs '/Users/henrywong/Downloads/Filament Stock - Sheet1.csv' > seeds/filaments_from_sheet.sql`
+   - `cd backend`
+   - `node scripts/csv_to_sql.mjs '/path/to/Filament Stock - Sheet1.csv' > seeds/filaments_from_sheet.sql`
 2. Import that seed file:
    - `npx wrangler d1 execute filament-tracker --file seeds/filaments_from_sheet.sql`
 
