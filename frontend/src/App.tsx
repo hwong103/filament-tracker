@@ -22,6 +22,7 @@ type SortState = {
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const LOW_STOCK_THRESHOLD = 0.25;
+const PASSCODE_STORAGE_KEY = "filament_passcode";
 
 const emptyForm: FilamentInput = {
   brand: "",
@@ -65,19 +66,21 @@ export default function App() {
   const [filterType, setFilterType] = useState("all");
   const [searchColor, setSearchColor] = useState("");
 
-  const [passcode, setPasscode] = useState(
-    localStorage.getItem("filament_passcode") || ""
-  );
+  const [passcode, setPasscode] = useState("");
   const [passcodeInput, setPasscodeInput] = useState("");
+  const [authReady, setAuthReady] = useState(false);
+  const [authChecking, setAuthChecking] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [newForm, setNewForm] = useState<FilamentInput>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<FilamentInput>(emptyForm);
 
-  const authorized = Boolean(passcode);
+  const authorized = authReady && Boolean(passcode);
 
   useEffect(() => {
-    fetchFilaments();
+    void fetchFilaments();
+    void restoreSavedPasscode();
   }, []);
 
   async function fetchFilaments() {
@@ -98,13 +101,82 @@ export default function App() {
     }
   }
 
-  function storePasscode(value: string) {
-    if (value) {
-      localStorage.setItem("filament_passcode", value);
-    } else {
-      localStorage.removeItem("filament_passcode");
+  async function verifyPasscode(token: string) {
+    const response = await fetch(apiUrl("/api/auth/verify"), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.ok;
+  }
+
+  function clearAuthState() {
+    localStorage.removeItem(PASSCODE_STORAGE_KEY);
+    setPasscode("");
+    setEditingId(null);
+  }
+
+  async function restoreSavedPasscode() {
+    const savedToken = localStorage.getItem(PASSCODE_STORAGE_KEY);
+    if (!savedToken) {
+      setAuthReady(true);
+      return;
     }
-    setPasscode(value);
+
+    setAuthChecking(true);
+    try {
+      const valid = await verifyPasscode(savedToken);
+      if (valid) {
+        setPasscode(savedToken);
+        setAuthError(null);
+      } else {
+        clearAuthState();
+        setAuthError("Saved passcode is invalid. Enter the current passcode.");
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setAuthError(`Unable to verify passcode (${message}).`);
+    } finally {
+      setAuthChecking(false);
+      setAuthReady(true);
+    }
+  }
+
+  async function savePasscode() {
+    const token = passcodeInput.trim();
+    if (!token) {
+      clearAuthState();
+      setAuthError(null);
+      return;
+    }
+
+    setAuthChecking(true);
+    setAuthError(null);
+    try {
+      const valid = await verifyPasscode(token);
+      if (!valid) {
+        clearAuthState();
+        setAuthError("Invalid passcode.");
+        return;
+      }
+
+      localStorage.setItem(PASSCODE_STORAGE_KEY, token);
+      setPasscode(token);
+      setPasscodeInput("");
+    } catch (err) {
+      clearAuthState();
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setAuthError(`Unable to verify passcode (${message}).`);
+    } finally {
+      setAuthChecking(false);
+      setAuthReady(true);
+    }
+  }
+
+  function signOut() {
+    clearAuthState();
+    setAuthError(null);
   }
 
   function toggleSort(field: SortField) {
@@ -191,6 +263,12 @@ export default function App() {
         body: JSON.stringify(newForm),
       });
 
+      if (response.status === 401) {
+        clearAuthState();
+        setAuthError("Passcode rejected. Enter the current passcode.");
+        throw new Error("Unauthorized (401)");
+      }
+
       if (!response.ok) {
         throw new Error(`Create failed (${response.status})`);
       }
@@ -228,6 +306,12 @@ export default function App() {
         body: JSON.stringify(editForm),
       });
 
+      if (response.status === 401) {
+        clearAuthState();
+        setAuthError("Passcode rejected. Enter the current passcode.");
+        throw new Error("Unauthorized (401)");
+      }
+
       if (!response.ok) {
         throw new Error(`Update failed (${response.status})`);
       }
@@ -255,6 +339,12 @@ export default function App() {
           Authorization: `Bearer ${passcode}`,
         },
       });
+
+      if (response.status === 401) {
+        clearAuthState();
+        setAuthError("Passcode rejected. Enter the current passcode.");
+        throw new Error("Unauthorized (401)");
+      }
 
       if (!response.ok) {
         throw new Error(`Delete failed (${response.status})`);
@@ -358,24 +448,31 @@ export default function App() {
                 placeholder="Enter passcode"
                 value={passcodeInput}
                 onChange={(event) => setPasscodeInput(event.target.value)}
+                disabled={authChecking}
               />
             </label>
+            <p className={`auth-note ${authError ? "error" : ""}`}>
+              {authChecking
+                ? "Verifying passcode..."
+                : authorized
+                  ? "Editor mode enabled."
+                  : authError || "Read-only mode."}
+            </p>
             <div className="auth-actions">
               <button
                 type="button"
                 className="button"
-                onClick={() => {
-                  storePasscode(passcodeInput.trim());
-                  setPasscodeInput("");
-                }}
+                onClick={() => void savePasscode()}
+                disabled={authChecking}
               >
-                Save passcode
+                Verify passcode
               </button>
               {authorized ? (
                 <button
                   type="button"
                   className="button ghost"
-                  onClick={() => storePasscode("")}
+                  onClick={signOut}
+                  disabled={authChecking}
                 >
                   Sign out
                 </button>

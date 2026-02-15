@@ -111,6 +111,12 @@ export default {
       });
     }
 
+    if (path === "/api/auth/verify" && request.method === "GET") {
+      const authError = requireAuth(request, env);
+      if (authError) return authError;
+      return jsonResponse(request, env, { ok: true });
+    }
+
     if (path === "/api/filaments") {
       if (request.method === "GET") {
         const result = await env.DB.prepare(
