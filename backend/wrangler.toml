@@ -1,0 +1,11 @@
+name = "filament-tracker-api"
+main = "src/worker.ts"
+compatibility_date = "2026-02-15"
+
+[vars]
+ALLOWED_ORIGINS = "https://<your-gh-pages-domain>"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "filament-tracker"
+database_id = "<replace-with-d1-id>"

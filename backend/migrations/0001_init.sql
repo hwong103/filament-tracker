@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS filaments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  brand TEXT NOT NULL,
+  color TEXT NOT NULL,
+  type TEXT NOT NULL,
+  material TEXT NOT NULL,
+  amount REAL NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
