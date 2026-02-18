@@ -112,6 +112,16 @@ strong {
   flex: 1;
 }
 
+.checkbox-label {
+  justify-content: flex-end;
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+  align-self: flex-start;
+}
+
 label {
   display: flex;
   flex-direction: column;

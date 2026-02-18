@@ -23,6 +23,7 @@ type SortState = {
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 const LOW_STOCK_THRESHOLD = 0.25;
 const PASSCODE_STORAGE_KEY = "filament_passcode";
+const HIDE_OUT_OF_STOCK_STORAGE_KEY = "filament_hide_out_of_stock";
 
 const emptyForm: FilamentInput = {
   brand: "",
@@ -35,6 +36,104 @@ const emptyForm: FilamentInput = {
 function apiUrl(path: string) {
   if (!API_BASE) return path;
   return `${API_BASE}${path}`;
+}
+
+function normalizeText(value: string) {
+  return value
+    .trim()
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .replace(/\s+/g, " ");
+}
+
+function canonicalType(value: string) {
+  const cleaned = normalizeText(value);
+  const normalized = cleaned.toLowerCase();
+  if (normalized === "basic") return "Basic";
+  if (normalized === "matte") return "Matte";
+  if (normalized === "silk") return "Silk";
+  return cleaned;
+}
+
+function canonicalMaterial(value: string) {
+  const cleaned = normalizeText(value).toUpperCase();
+  const compact = cleaned.replace(/\s+/g, "");
+  if (compact === "PLA+") return "PLA+";
+  if (compact === "PLA") return "PLA";
+  if (compact === "PETG") return "PETG";
+  if (compact === "ABS") return "ABS";
+  if (compact === "ASA") return "ASA";
+  if (compact === "TPU") return "TPU";
+  return cleaned;
+}
+
+function normalizeFilament(input: Filament): Filament {
+  return {
+    ...input,
+    brand: input.brand.trim(),
+    color: normalizeText(input.color),
+    type: canonicalType(input.type),
+    material: canonicalMaterial(input.material),
+  };
+}
+
+function normalizeFilamentInput(input: FilamentInput): FilamentInput {
+  return {
+    ...input,
+    brand: input.brand.trim(),
+    color: normalizeText(input.color),
+    type: canonicalType(input.type),
+    material: canonicalMaterial(input.material),
+  };
+}
+
+function colorIcon(color: string) {
+  const normalized = color.toLowerCase();
+  if (normalized.includes("black")) return "⚫";
+  if (normalized.includes("white")) return "⚪";
+  if (normalized.includes("grey") || normalized.includes("gray")) return "◻️";
+  if (normalized.includes("red")) return "🔴";
+  if (normalized.includes("orange")) return "🟠";
+  if (normalized.includes("yellow")) return "🟡";
+  if (normalized.includes("green")) return "🟢";
+  if (normalized.includes("blue")) return "🔵";
+  if (normalized.includes("purple") || normalized.includes("violet")) return "🟣";
+  if (normalized.includes("pink")) return "🩷";
+  if (normalized.includes("brown")) return "🟤";
+  if (normalized.includes("silver")) return "🥈";
+  if (normalized.includes("gold")) return "🥇";
+  if (normalized.includes("clear") || normalized.includes("transparent")) return "💎";
+  return "🎨";
+}
+
+function typeIcon(type: string) {
+  const normalized = type.toLowerCase();
+  if (normalized === "basic") return "🧵";
+  if (normalized === "matte") return "🪨";
+  if (normalized === "silk") return "✨";
+  return "🏷️";
+}
+
+function materialIcon(material: string) {
+  const normalized = material.toUpperCase();
+  if (normalized === "PLA") return "🌿";
+  if (normalized === "PLA+") return "💪";
+  if (normalized === "PETG") return "🧪";
+  if (normalized === "ABS") return "🔥";
+  if (normalized === "ASA") return "☀️";
+  if (normalized === "TPU") return "🛞";
+  return "🧱";
+}
+
+function formatColorLabel(color: string) {
+  return `${colorIcon(color)} ${color}`;
+}
+
+function formatTypeLabel(type: string) {
+  return `${typeIcon(type)} ${type}`;
+}
+
+function formatMaterialLabel(material: string) {
+  return `${materialIcon(material)} ${material}`;
 }
 
 function AmountBar({ amount }: { amount: number }) {
@@ -65,6 +164,10 @@ export default function App() {
   const [filterMaterial, setFilterMaterial] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [searchColor, setSearchColor] = useState("");
+  const [hideOutOfStock, setHideOutOfStock] = useState(() => {
+    const saved = localStorage.getItem(HIDE_OUT_OF_STOCK_STORAGE_KEY);
+    return saved === "true";
+  });
 
   const [passcode, setPasscode] = useState("");
   const [passcodeInput, setPasscodeInput] = useState("");
@@ -83,6 +186,13 @@ export default function App() {
     void restoreSavedPasscode();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem(
+      HIDE_OUT_OF_STOCK_STORAGE_KEY,
+      hideOutOfStock ? "true" : "false"
+    );
+  }, [hideOutOfStock]);
+
   async function fetchFilaments() {
     setLoading(true);
     setError(null);
@@ -92,7 +202,7 @@ export default function App() {
         throw new Error(`Failed to load (${response.status})`);
       }
       const data = (await response.json()) as Filament[];
-      setFilaments(data);
+      setFilaments(data.map(normalizeFilament));
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
@@ -236,6 +346,9 @@ export default function App() {
       if (filterType !== "all" && filament.type !== filterType) {
         return false;
       }
+      if (hideOutOfStock && filament.amount <= 0) {
+        return false;
+      }
       if (normalizedSearch) {
         return filament.color.toLowerCase().includes(normalizedSearch);
       }
@@ -243,7 +356,15 @@ export default function App() {
     });
 
     return sortedFilaments(matches);
-  }, [filaments, filterBrand, filterMaterial, filterType, searchColor, sort]);
+  }, [
+    filaments,
+    filterBrand,
+    filterMaterial,
+    filterType,
+    hideOutOfStock,
+    searchColor,
+    sort,
+  ]);
 
   const totalSpools = useMemo(() => {
     return filaments.reduce((sum, filament) => sum + filament.amount, 0);
@@ -254,13 +375,14 @@ export default function App() {
     if (!authorized) return;
 
     try {
+      const payload = normalizeFilamentInput(newForm);
       const response = await fetch(apiUrl("/api/filaments"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${passcode}`,
         },
-        body: JSON.stringify(newForm),
+        body: JSON.stringify(payload),
       });
 
       if (response.status === 401) {
@@ -273,7 +395,7 @@ export default function App() {
         throw new Error(`Create failed (${response.status})`);
       }
 
-      const created = (await response.json()) as Filament;
+      const created = normalizeFilament((await response.json()) as Filament);
       setFilaments((prev) => [...prev, created]);
       setNewForm(emptyForm);
     } catch (err) {
@@ -297,13 +419,14 @@ export default function App() {
     if (!authorized || editingId === null) return;
 
     try {
+      const payload = normalizeFilamentInput(editForm);
       const response = await fetch(apiUrl(`/api/filaments/${editingId}`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${passcode}`,
         },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
 
       if (response.status === 401) {
@@ -316,7 +439,7 @@ export default function App() {
         throw new Error(`Update failed (${response.status})`);
       }
 
-      const updated = (await response.json()) as Filament;
+      const updated = normalizeFilament((await response.json()) as Filament);
       setFilaments((prev) =>
         prev.map((item) => (item.id === updated.id ? updated : item))
       );
@@ -411,7 +534,7 @@ export default function App() {
                 <option value="all">All</option>
                 {filterOptions.materials.map((material) => (
                   <option key={material} value={material}>
-                    {material}
+                    {formatMaterialLabel(material)}
                   </option>
                 ))}
               </select>
@@ -425,10 +548,18 @@ export default function App() {
                 <option value="all">All</option>
                 {filterOptions.types.map((type) => (
                   <option key={type} value={type}>
-                    {type}
+                    {formatTypeLabel(type)}
                   </option>
                 ))}
               </select>
+            </label>
+            <label className="checkbox-label">
+              Hide run out
+              <input
+                type="checkbox"
+                checked={hideOutOfStock}
+                onChange={(event) => setHideOutOfStock(event.target.checked)}
+              />
             </label>
             <label>
               Colour search
@@ -644,9 +775,9 @@ export default function App() {
                 ) : (
                   <>
                     <span>{filament.brand}</span>
-                    <span>{filament.color}</span>
-                    <span>{filament.type}</span>
-                    <span>{filament.material}</span>
+                    <span>{formatColorLabel(filament.color)}</span>
+                    <span>{formatTypeLabel(filament.type)}</span>
+                    <span>{formatMaterialLabel(filament.material)}</span>
                     <AmountBar amount={filament.amount} />
                     {authorized ? (
                       <div className="actions">
