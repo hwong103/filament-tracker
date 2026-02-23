@@ -128,6 +128,12 @@ export function InventoryList({
           <ArrowClockwise size={14} weight="duotone" aria-hidden="true" /> Refresh
         </button>
       </div>
+      <p className="table-legend">
+        <span className="legend-chip type-chip type-tone-default">Type = finish style</span>
+        <span className="legend-chip material-chip material-tone-default">
+          Material = polymer family
+        </span>
+      </p>
 
       <div className="desktop-table-wrap">
         <table className="inventory-table">
