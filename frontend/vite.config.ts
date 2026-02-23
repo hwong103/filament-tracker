@@ -8,5 +8,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base,
+    test: {
+      environment: "jsdom",
+      setupFiles: "./src/test/setup.ts",
+      css: true,
+    },
   };
 });
