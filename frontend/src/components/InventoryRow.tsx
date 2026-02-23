@@ -1,8 +1,6 @@
-import type { ReactNode } from "react";
 import {
   Check,
   Cube,
-  Palette,
   PencilSimple,
   Tag,
   Trash,
@@ -46,11 +44,88 @@ function AmountBar({ amount }: { amount: number }) {
   );
 }
 
-function Attribute({ icon, label }: { icon: ReactNode; label: string }) {
+const TYPE_TONES: Record<string, string> = {
+  basic: "type-tone-basic",
+  matte: "type-tone-matte",
+  silk: "type-tone-silk",
+};
+
+const MATERIAL_TONES: Record<string, string> = {
+  pla: "material-tone-pla",
+  "pla+": "material-tone-plaplus",
+  petg: "material-tone-petg",
+  abs: "material-tone-abs",
+  asa: "material-tone-asa",
+  tpu: "material-tone-tpu",
+};
+
+const COLOR_KEYWORDS: Array<{ token: string; hex: string }> = [
+  { token: "black", hex: "#23201d" },
+  { token: "white", hex: "#f4f1ec" },
+  { token: "grey", hex: "#7d7a76" },
+  { token: "gray", hex: "#7d7a76" },
+  { token: "red", hex: "#a84e47" },
+  { token: "orange", hex: "#c97640" },
+  { token: "yellow", hex: "#bfa24f" },
+  { token: "green", hex: "#5c7f62" },
+  { token: "blue", hex: "#547298" },
+  { token: "purple", hex: "#7a6a92" },
+  { token: "violet", hex: "#7a6a92" },
+  { token: "pink", hex: "#b57c8d" },
+  { token: "brown", hex: "#7a5c45" },
+  { token: "silver", hex: "#9fa3aa" },
+  { token: "gold", hex: "#af8f57" },
+];
+
+function toneClass(value: string, map: Record<string, string>, fallback: string) {
+  const key = value.trim().toLowerCase();
+  return map[key] ?? fallback;
+}
+
+function hashColor(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = value.charCodeAt(index) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 32%, 56%)`;
+}
+
+function colorHex(value: string) {
+  const normalized = value.trim().toLowerCase();
+  const keyword = COLOR_KEYWORDS.find((entry) => normalized.includes(entry.token));
+  return keyword ? keyword.hex : hashColor(normalized);
+}
+
+function colorParts(value: string) {
+  return value
+    .split(/[\/,&]/g)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function ColorValue({ color }: { color: string }) {
+  const normalized = color.toLowerCase();
+  const parts = colorParts(color);
+  const isSplit = parts.length >= 2;
+  const isClear = normalized.includes("clear") || normalized.includes("transparent");
+  const isMarble = normalized.includes("marble");
+  const isMetal = normalized.includes("metal") || normalized.includes("silver") || normalized.includes("gold");
+
+  const swatchStyle = isSplit
+    ? {
+        background: `linear-gradient(90deg, ${colorHex(parts[0])} 0%, ${colorHex(parts[0])} 49%, ${colorHex(parts[1])} 51%, ${colorHex(parts[1])} 100%)`,
+      }
+    : { backgroundColor: colorHex(color) };
+
   return (
-    <span className="attribute-value">
-      {icon}
-      {label}
+    <span className="color-cell">
+      <span
+        className={`color-swatch${isClear ? " clear" : ""}${isMarble ? " marble" : ""}${isMetal ? " metal" : ""}`}
+        style={swatchStyle}
+        aria-hidden="true"
+      />
+      <span>{color}</span>
     </span>
   );
 }
@@ -126,25 +201,26 @@ export function InventoryRow({
 }: InventoryRowProps) {
   const lowStock = filament.amount <= lowStockThreshold;
 
-  const colorValue = (
-    <Attribute
-      icon={<Palette size={14} weight="duotone" aria-hidden="true" />}
-      label={filament.color}
-    />
-  );
+  const colorValue = <ColorValue color={filament.color} />;
 
   const typeValue = (
-    <Attribute
-      icon={<Tag size={14} weight="duotone" aria-hidden="true" />}
-      label={filament.type}
-    />
+    <span className={`pill-chip type-chip ${toneClass(filament.type, TYPE_TONES, "type-tone-default")}`}>
+      <Tag size={14} weight="duotone" aria-hidden="true" />
+      {filament.type}
+    </span>
   );
 
   const materialValue = (
-    <Attribute
-      icon={<Cube size={14} weight="duotone" aria-hidden="true" />}
-      label={filament.material}
-    />
+    <span
+      className={`pill-chip material-chip ${toneClass(
+        filament.material,
+        MATERIAL_TONES,
+        "material-tone-default"
+      )}`}
+    >
+      <Cube size={14} weight="duotone" aria-hidden="true" />
+      {filament.material}
+    </span>
   );
 
   const actionCell = authorized ? (
