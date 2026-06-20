@@ -16,6 +16,26 @@ const COLOR_KEYWORDS: Array<{ token: string; hex: string }> = [
   { token: "gold", hex: "#af8f57" },
 ];
 
+const COLOR_FAMILIES: Array<{ label: string; tokens: string[] }> = [
+  { label: "Black & grey", tokens: ["black", "grey", "gray", "silver"] },
+  { label: "White & clear", tokens: ["white", "clear", "transparent"] },
+  { label: "Reds & pinks", tokens: ["red", "pink"] },
+  { label: "Oranges & yellows", tokens: ["orange", "yellow", "gold"] },
+  { label: "Greens", tokens: ["green", "mint"] },
+  { label: "Blues", tokens: ["blue"] },
+  { label: "Purples", tokens: ["purple", "violet"] },
+  { label: "Natural tones", tokens: ["brown", "beige", "wood"] },
+];
+
+export function colorFamily(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return (
+    COLOR_FAMILIES.find((family) =>
+      family.tokens.some((token) => normalized.includes(token))
+    )?.label ?? "Other colours"
+  );
+}
+
 export function colorHex(value: string) {
   const normalized = value.trim().toLowerCase();
   const keyword = COLOR_KEYWORDS.find((entry) => normalized.includes(entry.token));

@@ -26,6 +26,35 @@ export function getFilterOptions(filaments: Filament[]): FilterOptions {
   };
 }
 
+function includeSelected(available: string[], selected: string[]) {
+  return Array.from(new Set([...available, ...selected])).sort();
+}
+
+export function getAvailableFilterOptions(
+  filaments: Filament[],
+  filters: InventoryFiltersState
+): FilterOptions {
+  const brandOptions = getFilterOptions(
+    filterFilaments(filaments, { ...filters, brand: "all" })
+  );
+  const materialOptions = getFilterOptions(
+    filterFilaments(filaments, { ...filters, materials: [] })
+  );
+  const typeOptions = getFilterOptions(
+    filterFilaments(filaments, { ...filters, types: [] })
+  );
+  const colorOptions = getFilterOptions(
+    filterFilaments(filaments, { ...filters, colors: [] })
+  );
+
+  return {
+    brands: brandOptions.brands,
+    materials: includeSelected(materialOptions.materials, filters.materials),
+    types: includeSelected(typeOptions.types, filters.types),
+    colors: includeSelected(colorOptions.colors, filters.colors),
+  };
+}
+
 export function filterFilaments(
   filaments: Filament[],
   filters: InventoryFiltersState

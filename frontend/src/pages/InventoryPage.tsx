@@ -21,7 +21,7 @@ import {
 } from "../lib/constants";
 import {
   filterFilaments,
-  getFilterOptions,
+  getAvailableFilterOptions,
   getTotalSpools,
   sortFilaments,
 } from "../lib/inventory";
@@ -183,7 +183,10 @@ export function InventoryPage() {
     );
   }, [filters.hideOutOfStock]);
 
-  const filterOptions = useMemo(() => getFilterOptions(filaments), [filaments]);
+  const filterOptions = useMemo(
+    () => getAvailableFilterOptions(filaments, filters),
+    [filaments, filters]
+  );
 
   const filteredFilaments = useMemo(() => {
     return sortFilaments(filterFilaments(filaments, filters), sort);

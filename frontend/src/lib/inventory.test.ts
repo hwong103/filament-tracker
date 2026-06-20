@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterFilaments, sortFilaments } from "./inventory";
+import { filterFilaments, getAvailableFilterOptions, sortFilaments } from "./inventory";
 import type { Filament, InventoryFiltersState, SortState } from "../types/inventory";
 
 const filaments: Filament[] = [
@@ -92,5 +92,16 @@ describe("inventory", () => {
     const filtered = filterFilaments(filaments, baseFilters);
 
     expect(filtered.map((item) => item.id)).toEqual([1, 2, 3]);
+  });
+
+  it("only exposes facet options compatible with other active filters", () => {
+    const options = getAvailableFilterOptions(filaments, {
+      ...baseFilters,
+      materials: ["PETG"],
+    });
+
+    expect(options.colors).toEqual(["Signal Red"]);
+    expect(options.types).toEqual(["Silk"]);
+    expect(options.materials).toEqual(["PETG", "PLA", "PLA+"]);
   });
 });
