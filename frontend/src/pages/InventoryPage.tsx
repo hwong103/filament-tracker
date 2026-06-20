@@ -58,6 +58,14 @@ function emptyFilters(): InventoryFiltersState {
   };
 }
 
+function filtersStartOpen() {
+  return (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function" ||
+    window.matchMedia("(min-width: 1081px)").matches
+  );
+}
+
 export function InventoryPage() {
   const [filaments, setFilaments] = useState<Filament[]>([]);
   const [sort, setSort] = useState<SortState>({ field: "brand", direction: "asc" });
@@ -66,6 +74,7 @@ export function InventoryPage() {
     ...emptyFilters(),
     hideOutOfStock: getSavedHideOutOfStock(),
   }));
+  const [filtersOpen, setFiltersOpen] = useState(filtersStartOpen);
 
   const [operations, setOperations] = useState(createInitialOperationStates);
 
@@ -422,7 +431,11 @@ export function InventoryPage() {
       {authorized ? (
         <div className="inventory-workspace">
           <aside className="filter-rail">
-            <details className="filter-disclosure">
+            <details
+              className="filter-disclosure"
+              open={filtersOpen}
+              onToggle={(event) => setFiltersOpen(event.currentTarget.open)}
+            >
               <summary>
                 Filters
                 <span>{activeFilterCount > 0 ? `${activeFilterCount} active` : "All stock"}</span>
