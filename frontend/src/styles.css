@@ -153,6 +153,14 @@ strong {
   padding-right: 2px;
 }
 
+.filter-disclosure > summary {
+  display: none;
+}
+
+.filter-disclosure > .filters-panel {
+  display: block;
+}
+
 .inventory-main {
   display: grid;
   gap: 12px;
@@ -270,6 +278,15 @@ strong {
   font-variant-numeric: tabular-nums;
 }
 
+.filter-helper {
+  margin: 8px 0 0;
+  color: #765644;
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .color-finder {
   padding: 20px;
   border-radius: 0;
@@ -313,6 +330,21 @@ strong {
   margin-top: 12px;
 }
 
+.more-filter-options {
+  margin-top: 10px;
+}
+
+.more-filter-options summary {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.more-filter-options .filter-chip-group {
+  margin-top: 10px;
+}
+
 .material-finder {
   padding: 18px 20px;
   background: var(--surface);
@@ -352,6 +384,12 @@ strong {
 .filter-chip:hover {
   border-color: var(--line-strong);
   transform: translateY(-1px);
+}
+
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--accent) 45%, transparent);
+  outline-offset: 2px;
 }
 
 .filter-chip.is-selected {
@@ -414,6 +452,10 @@ strong {
 .checkbox-label small {
   font-size: 11px;
   color: var(--text-subtle);
+}
+
+.stat-locked strong {
+  font-size: 1.15rem;
 }
 
 .checkbox-label input {
@@ -998,6 +1040,42 @@ select:focus {
     max-height: none;
     overflow: visible;
   }
+
+  .filter-disclosure {
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .filter-disclosure > summary {
+    min-height: 48px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-strong);
+    font-family: var(--display-font);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .filter-disclosure > summary span {
+    color: var(--accent-strong);
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .filter-disclosure[open] > summary {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .filter-disclosure:not([open]) > .filters-panel {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1061,6 +1139,15 @@ select:focus {
     padding: 18px;
   }
 
+  .filter-chip,
+  .button.small {
+    min-height: 44px;
+  }
+
+  .filter-chip {
+    padding-inline: 13px;
+  }
+
   .panel-heading {
     flex-direction: column;
     align-items: flex-start;
@@ -1074,5 +1161,16 @@ select:focus {
   .footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
