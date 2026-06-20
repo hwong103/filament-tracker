@@ -365,6 +365,8 @@ export function InventoryPage() {
           options={filterOptions}
           onChange={setFilters}
           onReset={resetFilters}
+          resultCount={filteredFilaments.length}
+          totalCount={filaments.length}
         />
         <AuthPanel
           passcodeInput={passcodeInput}

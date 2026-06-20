@@ -1,9 +1,9 @@
 # Filament Tracker
 
-Lightweight inventory tracker for 3D printer filament. Frontend is a static Vite + React app, backend is a Cloudflare Worker with a D1 database.
+Lightweight inventory tracker for 3D printer filament. The Vite + React frontend and D1 API deploy together as one Cloudflare Worker.
 
 ## Structure
-- `frontend/`: Vite + React app (GitHub Pages)
+- `frontend/`: Vite + React app, built as Worker static assets
 - `backend/`: Cloudflare Worker + D1 + migration + CSV import script
 
 ## Backend setup (Cloudflare)
@@ -12,29 +12,23 @@ Lightweight inventory tracker for 3D printer filament. Frontend is a static Vite
    - `npm install`
 2. Create D1 database:
    - `npx wrangler d1 create filament-tracker`
-3. Update `backend/wrangler.toml`:
-   - Set `database_id`
-   - Set `ALLOWED_ORIGINS` to your GitHub Pages domain
-4. Apply migrations:
+3. Apply migrations:
    - `npx wrangler d1 migrations apply filament-tracker`
 5. Set edit passcode:
    - `npx wrangler secret put EDIT_TOKEN`
-6. Deploy Worker:
-   - `npx wrangler deploy`
+5. Deploy the complete app (builds the frontend first):
+   - `npm run deploy`
 
-## Frontend setup (GitHub Pages)
+The Worker serves static assets directly and invokes the Worker only for `/api/*` requests. This keeps the frontend efficient on Cloudflare's free tier.
+
+## Frontend setup
 1. Install dependencies:
    - `cd frontend`
    - `npm install`
-2. Set API URL (local `.env` or CI):
-   - `VITE_API_BASE=https://<your-worker>.workers.dev`
-3. Set base path:
-   - `BASE_PATH=/your-repo-name/`
-4. Build:
+2. For a same-origin Cloudflare deployment, do not set `VITE_API_BASE`; the app uses `/api` on its own hostname.
+3. Build:
    - `npm run build`
-5. Publish:
-   - Use the included GitHub Actions workflow at `.github/workflows/deploy-pages.yml`
-   - Add repository secret `VITE_API_BASE` with your Worker URL
+4. Publish from `backend/` with `npm run deploy`.
 
 ## CSV import from Google Sheets
 1. Export your Google Sheet as CSV.

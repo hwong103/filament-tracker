@@ -1,11 +1,16 @@
 name = "filament-tracker-api"
 main = "src/worker.ts"
-compatibility_date = "2026-02-15"
+compatibility_date = "2026-06-20"
 
 [vars]
-ALLOWED_ORIGINS = "https://<your-gh-pages-domain>"
+ALLOWED_ORIGINS = "https://hwong103.github.io,https://filament-tracker.hwong103.work"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "filament-tracker"
-database_id = "<replace-with-d1-id>"
+database_id = "6dc0cc5b-e4e3-43c0-a0fc-9b8b5c1bf94c"
+
+[assets]
+directory = "../frontend/dist"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
