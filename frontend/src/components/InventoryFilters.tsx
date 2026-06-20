@@ -1,5 +1,5 @@
 import { FunnelSimple, MagnifyingGlass, X } from "@phosphor-icons/react";
-import { colorHex } from "../lib/color";
+import { colorFamily, colorHex } from "../lib/color";
 import type { FilterOptions, InventoryFiltersState } from "../types/inventory";
 
 type InventoryFiltersProps = {
@@ -38,8 +38,14 @@ export function InventoryFilters({
     const bSelected = filters.colors.includes(b);
     return Number(bSelected) - Number(aSelected) || a.localeCompare(b);
   });
-  const primaryColors = colorSuggestions.slice(0, 6);
-  const additionalColors = colorSuggestions.slice(6);
+  const colorGroups = colorSuggestions.reduce<Record<string, string[]>>(
+    (groups, color) => {
+      const family = colorFamily(color);
+      groups[family] = [...(groups[family] ?? []), color];
+      return groups;
+    },
+    {}
+  );
 
   function renderColorChip(color: string) {
     const selected = filters.colors.includes(color);
@@ -112,14 +118,13 @@ export function InventoryFilters({
             >
               All colours
             </button>
-            {primaryColors.map(renderColorChip)}
+            {Object.entries(colorGroups).map(([family, colors]) => (
+              <div key={family} className="color-family" role="group" aria-label={family}>
+                <span className="color-family-label">{family}</span>
+                <div className="filter-chip-group">{colors.map(renderColorChip)}</div>
+              </div>
+            ))}
           </div>
-        ) : null}
-        {additionalColors.length > 0 ? (
-          <details className="more-filter-options">
-            <summary>More colours ({additionalColors.length})</summary>
-            <div className="filter-chip-group">{additionalColors.map(renderColorChip)}</div>
-          </details>
         ) : null}
       </div>
 

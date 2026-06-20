@@ -330,19 +330,23 @@ strong {
   margin-top: 12px;
 }
 
-.more-filter-options {
-  margin-top: 10px;
+.color-family {
+  flex-basis: 100%;
 }
 
-.more-filter-options summary {
-  color: var(--accent-strong);
-  font-size: 13px;
+.color-family + .color-family {
+  padding-top: 10px;
+  border-top: 1px dashed color-mix(in oklch, var(--line) 78%, transparent);
+}
+
+.color-family-label {
+  display: block;
+  margin-bottom: 7px;
+  color: #765644;
+  font-size: 11px;
   font-weight: 700;
-  cursor: pointer;
-}
-
-.more-filter-options .filter-chip-group {
-  margin-top: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .material-finder {
