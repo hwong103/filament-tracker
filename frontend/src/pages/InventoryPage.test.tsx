@@ -24,7 +24,6 @@ describe("InventoryPage", () => {
 
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(jsonResponse({ error: "Unauthorized" }, 401));
 
     vi.stubGlobal("fetch", fetchMock);
@@ -38,6 +37,7 @@ describe("InventoryPage", () => {
   it("retries after load failure and clears stale load error", async () => {
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
       .mockResolvedValueOnce(jsonResponse({ error: "Server down" }, 500))
       .mockResolvedValueOnce(jsonResponse([]));
 
@@ -46,6 +46,8 @@ describe("InventoryPage", () => {
     const user = userEvent.setup();
     render(<InventoryPage />);
 
+    await user.type(screen.getByLabelText("Passcode"), "secret-token");
+    await user.click(screen.getByRole("button", { name: "Verify passcode" }));
     expect(await screen.findByText("Could not load inventory")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Retry" }));
 
@@ -57,8 +59,8 @@ describe("InventoryPage", () => {
   it("handles unauthorized create response by clearing editor mode", async () => {
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(jsonResponse({ error: "Unauthorized" }, 401));
 
     vi.stubGlobal("fetch", fetchMock);

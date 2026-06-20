@@ -136,6 +136,84 @@ strong {
   gap: 16px;
 }
 
+.inventory-workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.filter-rail {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 12px;
+  max-height: calc(100svh - 36px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.inventory-main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.editor-drawer {
+  border: 1px solid var(--line);
+  background: var(--surface-muted);
+}
+
+.editor-drawer summary {
+  min-height: 48px;
+  padding: 14px 16px;
+  color: var(--text-strong);
+  font-family: var(--display-font);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.editor-drawer[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.editor-drawer .form-panel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--surface);
+}
+
+.auth-panel-locked {
+  width: min(100%, 460px);
+  margin: clamp(12px, 6vh, 64px) auto;
+  padding: 24px;
+}
+
+.auth-panel-locked .panel-heading {
+  margin-bottom: 20px;
+}
+
+.auth-panel-unlocked {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  box-shadow: none;
+}
+
+.access-label {
+  margin: 0 0 3px;
+  color: var(--text-subtle);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .panel {
   background: var(--surface);
   border-radius: var(--radius-md);
@@ -902,6 +980,16 @@ select:focus {
   .filters-secondary {
     grid-template-columns: repeat(2, minmax(160px, 1fr));
   }
+
+  .inventory-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 @media (max-width: 900px) {
@@ -955,6 +1043,10 @@ select:focus {
   .material-finder,
   .filters-secondary {
     padding: 14px;
+  }
+
+  .auth-panel-locked {
+    padding: 18px;
   }
 
   .panel-heading {

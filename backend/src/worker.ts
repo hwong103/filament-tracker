@@ -119,6 +119,9 @@ export default {
 
     if (path === "/api/filaments") {
       if (request.method === "GET") {
+        const authError = requireAuth(request, env);
+        if (authError) return authError;
+
         const result = await env.DB.prepare(
           "SELECT * FROM filaments ORDER BY brand ASC, color ASC"
         ).all();

@@ -19,11 +19,25 @@ export function AuthPanel({
   onVerify,
   onSignOut,
 }: AuthPanelProps) {
+  if (authorized) {
+    return (
+      <section className="panel auth-panel auth-panel-unlocked" aria-label="Tracker access">
+        <div>
+          <p className="access-label">Tracker access</p>
+          <strong>Unlocked</strong>
+        </div>
+        <button type="button" className="button ghost small" onClick={onSignOut}>
+          Lock tracker
+        </button>
+      </section>
+    );
+  }
+
   return (
-    <section className="panel auth-panel" aria-label="Editor authorization">
+    <section className="panel auth-panel auth-panel-locked" aria-label="Unlock inventory">
       <div className="panel-heading">
         <h2>
-          <Key size={18} weight="duotone" aria-hidden="true" /> Editor access
+          <Key size={18} weight="duotone" aria-hidden="true" /> Unlock tracker
         </h2>
       </div>
 
@@ -41,7 +55,7 @@ export function AuthPanel({
         />
       </label>
       <p id="editor-passcode-helper" className="field-helper">
-        Enter the shared edit passcode to enable add, edit, and delete actions.
+        Enter the shared passcode to view and manage your inventory.
       </p>
 
       {errorMessage ? (
@@ -52,9 +66,7 @@ export function AuthPanel({
         <p className="auth-note" role="status">
           {checking
             ? "Verifying passcode..."
-            : authorized
-              ? "Editor mode is enabled."
-              : "Read-only mode is active."}
+            : "The inventory stays private until it is unlocked."}
         </p>
       )}
 
