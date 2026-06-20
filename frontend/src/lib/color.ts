@@ -36,6 +36,13 @@ export function colorFamily(value: string) {
   );
 }
 
+export function colorFamilyRank(value: string) {
+  const family = colorFamily(value);
+  const index = COLOR_FAMILIES.findIndex((entry) => entry.label === family);
+
+  return index === -1 ? COLOR_FAMILIES.length : index;
+}
+
 export function colorHex(value: string) {
   const normalized = value.trim().toLowerCase();
   const keyword = COLOR_KEYWORDS.find((entry) => normalized.includes(entry.token));
