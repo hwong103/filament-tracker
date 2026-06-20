@@ -9,17 +9,20 @@ export function getFilterOptions(filaments: Filament[]): FilterOptions {
   const brands = new Set<string>();
   const materials = new Set<string>();
   const types = new Set<string>();
+  const colors = new Set<string>();
 
   filaments.forEach((filament) => {
     brands.add(filament.brand);
     materials.add(filament.material);
     types.add(filament.type);
+    colors.add(filament.color);
   });
 
   return {
     brands: Array.from(brands).sort(),
     materials: Array.from(materials).sort(),
     types: Array.from(types).sort(),
+    colors: Array.from(colors).sort(),
   };
 }
 

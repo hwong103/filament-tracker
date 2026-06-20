@@ -8,6 +8,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { FilamentFields } from "./FilamentFields";
+import { colorHex } from "../lib/color";
 import type { FieldErrors, Filament, FilamentDraft } from "../types/inventory";
 
 type InventoryRowProps = {
@@ -59,42 +60,9 @@ const MATERIAL_TONES: Record<string, string> = {
   tpu: "material-tone-tpu",
 };
 
-const COLOR_KEYWORDS: Array<{ token: string; hex: string }> = [
-  { token: "black", hex: "#23201d" },
-  { token: "white", hex: "#f4f1ec" },
-  { token: "grey", hex: "#7d7a76" },
-  { token: "gray", hex: "#7d7a76" },
-  { token: "red", hex: "#a84e47" },
-  { token: "orange", hex: "#c97640" },
-  { token: "yellow", hex: "#bfa24f" },
-  { token: "green", hex: "#5c7f62" },
-  { token: "blue", hex: "#547298" },
-  { token: "purple", hex: "#7a6a92" },
-  { token: "violet", hex: "#7a6a92" },
-  { token: "pink", hex: "#b57c8d" },
-  { token: "brown", hex: "#7a5c45" },
-  { token: "silver", hex: "#9fa3aa" },
-  { token: "gold", hex: "#af8f57" },
-];
-
 function toneClass(value: string, map: Record<string, string>, fallback: string) {
   const key = value.trim().toLowerCase();
   return map[key] ?? fallback;
-}
-
-function hashColor(value: string) {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = value.charCodeAt(index) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 32%, 56%)`;
-}
-
-function colorHex(value: string) {
-  const normalized = value.trim().toLowerCase();
-  const keyword = COLOR_KEYWORDS.find((entry) => normalized.includes(entry.token));
-  return keyword ? keyword.hex : hashColor(normalized);
 }
 
 function colorParts(value: string) {

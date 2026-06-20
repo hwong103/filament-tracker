@@ -38,6 +38,7 @@ export type FilterOptions = {
   brands: string[];
   materials: string[];
   types: string[];
+  colors: string[];
 };
 
 export type OperationStatus = "idle" | "loading" | "success" | "error";
