@@ -14,7 +14,7 @@ Lightweight inventory tracker for 3D printer filament. The Vite + React frontend
    - `npx wrangler d1 create filament-tracker`
 3. Apply migrations:
    - `npx wrangler d1 migrations apply filament-tracker`
-5. Set edit passcode:
+4. Set edit passcode:
    - `npx wrangler secret put EDIT_TOKEN`
 5. Deploy the complete app (builds the frontend first):
    - `npm run deploy`
@@ -52,6 +52,6 @@ For GitHub Actions deployment, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUN
 - Frontend: `cd frontend` then `npm run dev`
 
 ## Notes
-- Public read access is enabled.
-- Edits require the shared passcode stored in `EDIT_TOKEN`.
-- Low stock threshold is `0.25` spools in `frontend/src/App.tsx`.
+- The app opens on an unlock screen. Inventory reads and edits require the
+  shared passcode stored in `EDIT_TOKEN`.
+- Low stock threshold is `0.25` spools in `frontend/src/lib/constants.ts`.

@@ -318,6 +318,14 @@ strong {
   background: var(--surface);
 }
 
+.type-finder {
+  border-top: 1px solid var(--line);
+}
+
+.primary-stock-filter {
+  margin: 0 20px 18px;
+}
+
 .filter-group-label {
   display: block;
   margin-bottom: 9px;
@@ -372,7 +380,7 @@ strong {
 }
 
 .filters-secondary {
-  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) minmax(190px, auto);
+  grid-template-columns: minmax(160px, 1fr);
   align-items: end;
   margin: 0;
   padding: 18px 20px 20px;
@@ -1043,6 +1051,10 @@ select:focus {
   .material-finder,
   .filters-secondary {
     padding: 14px;
+  }
+
+  .primary-stock-filter {
+    margin: 0 14px 14px;
   }
 
   .auth-panel-locked {

@@ -37,8 +37,9 @@ const filaments: Filament[] = [
 
 const baseFilters: InventoryFiltersState = {
   brand: "all",
-  material: "all",
-  type: "all",
+  materials: [],
+  types: [],
+  colors: [],
   searchColor: "",
   hideOutOfStock: false,
 };
@@ -57,8 +58,8 @@ describe("inventory", () => {
   it("applies combined filters", () => {
     const filtered = filterFilaments(filaments, {
       ...baseFilters,
-      material: "PLA+",
-      type: "Matte",
+      materials: ["PLA+"],
+      types: ["Matte"],
       searchColor: "green",
     });
 
@@ -73,5 +74,23 @@ describe("inventory", () => {
     });
 
     expect(filtered.map((item) => item.id)).toEqual([2, 3]);
+  });
+
+  it("matches any selected material, finish, or colour while combining categories", () => {
+    const filtered = filterFilaments(filaments, {
+      ...baseFilters,
+      materials: ["PLA", "PETG"],
+      types: ["Basic", "Silk"],
+      colors: ["Ivory", "Signal Red"],
+      hideOutOfStock: true,
+    });
+
+    expect(filtered.map((item) => item.id)).toEqual([3]);
+  });
+
+  it("treats empty multi-select arrays as all values", () => {
+    const filtered = filterFilaments(filaments, baseFilters);
+
+    expect(filtered.map((item) => item.id)).toEqual([1, 2, 3]);
   });
 });

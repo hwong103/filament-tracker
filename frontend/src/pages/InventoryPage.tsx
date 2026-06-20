@@ -50,8 +50,9 @@ function getSavedHideOutOfStock() {
 function emptyFilters(): InventoryFiltersState {
   return {
     brand: "all",
-    material: "all",
-    type: "all",
+    materials: [],
+    types: [],
+    colors: [],
     searchColor: "",
     hideOutOfStock: false,
   };
@@ -179,8 +180,9 @@ export function InventoryPage() {
 
   const hasActiveFilters =
     filters.brand !== "all" ||
-    filters.material !== "all" ||
-    filters.type !== "all" ||
+    filters.materials.length > 0 ||
+    filters.types.length > 0 ||
+    filters.colors.length > 0 ||
     filters.searchColor.trim() !== "" ||
     filters.hideOutOfStock;
 

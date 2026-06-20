@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev src/worker.ts",
+    "test:run": "vitest run",
     "build:frontend": "npm --prefix ../frontend run build",
     "deploy": "npm run build:frontend && wrangler deploy --keep-vars",
     "db:migrate": "wrangler d1 migrations apply filament-tracker"
@@ -12,6 +13,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240815.0",
     "typescript": "^5.5.4",
+    "vitest": "^3.2.6",
     "wrangler": "^4.103.0"
   }
 }
