@@ -28,8 +28,9 @@ export type SortState = {
 
 export type InventoryFiltersState = {
   brand: string;
-  material: string;
-  type: string;
+  materials: string[];
+  types: string[];
+  colors: string[];
   searchColor: string;
   hideOutOfStock: boolean;
 };

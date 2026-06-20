@@ -11,6 +11,12 @@ type InventoryFiltersProps = {
   totalCount: number;
 };
 
+function toggleSelection(values: string[], value: string) {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
 export function InventoryFilters({
   filters,
   options,
@@ -21,8 +27,9 @@ export function InventoryFilters({
 }: InventoryFiltersProps) {
   const hasActiveFilters =
     filters.brand !== "all" ||
-    filters.material !== "all" ||
-    filters.type !== "all" ||
+    filters.materials.length > 0 ||
+    filters.types.length > 0 ||
+    filters.colors.length > 0 ||
     filters.searchColor.trim() !== "" ||
     filters.hideOutOfStock;
 
@@ -64,13 +71,26 @@ export function InventoryFilters({
         </label>
         {colorSuggestions.length > 0 ? (
           <div className="filter-chip-group" aria-label="Available colours">
+            <button
+              type="button"
+              className={`filter-chip${filters.colors.length === 0 ? " is-selected" : ""}`}
+              onClick={() => onChange({ ...filters, colors: [] })}
+              aria-pressed={filters.colors.length === 0}
+            >
+              All colours
+            </button>
             {colorSuggestions.map((color) => (
               <button
                 key={color}
                 type="button"
-                className={`filter-chip color-filter-chip${filters.searchColor === color ? " is-selected" : ""}`}
-                onClick={() => onChange({ ...filters, searchColor: color })}
-                aria-pressed={filters.searchColor === color}
+                className={`filter-chip color-filter-chip${filters.colors.includes(color) ? " is-selected" : ""}`}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    colors: toggleSelection(filters.colors, color),
+                  })
+                }
+                aria-pressed={filters.colors.includes(color)}
               >
                 <span
                   className="filter-color-dot"
@@ -89,9 +109,9 @@ export function InventoryFilters({
         <div className="filter-chip-group" aria-label="Filter by material">
           <button
             type="button"
-            className={`filter-chip${filters.material === "all" ? " is-selected" : ""}`}
-            onClick={() => onChange({ ...filters, material: "all" })}
-            aria-pressed={filters.material === "all"}
+            className={`filter-chip${filters.materials.length === 0 ? " is-selected" : ""}`}
+            onClick={() => onChange({ ...filters, materials: [] })}
+            aria-pressed={filters.materials.length === 0}
           >
             All materials
           </button>
@@ -99,15 +119,65 @@ export function InventoryFilters({
             <button
               key={material}
               type="button"
-              className={`filter-chip material-filter-chip${filters.material === material ? " is-selected" : ""}`}
-              onClick={() => onChange({ ...filters, material })}
-              aria-pressed={filters.material === material}
+              className={`filter-chip material-filter-chip${filters.materials.includes(material) ? " is-selected" : ""}`}
+              onClick={() =>
+                onChange({
+                  ...filters,
+                  materials: toggleSelection(filters.materials, material),
+                })
+              }
+              aria-pressed={filters.materials.includes(material)}
             >
               {material}
             </button>
           ))}
         </div>
       </div>
+
+      <div className="material-finder type-finder">
+        <span className="filter-group-label">Finish type</span>
+        <div className="filter-chip-group" aria-label="Filter by finish type">
+          <button
+            type="button"
+            className={`filter-chip${filters.types.length === 0 ? " is-selected" : ""}`}
+            onClick={() => onChange({ ...filters, types: [] })}
+            aria-pressed={filters.types.length === 0}
+          >
+            All finishes
+          </button>
+          {options.types.map((type) => (
+            <button
+              key={type}
+              type="button"
+              className={`filter-chip${filters.types.includes(type) ? " is-selected" : ""}`}
+              onClick={() =>
+                onChange({
+                  ...filters,
+                  types: toggleSelection(filters.types, type),
+                })
+              }
+              aria-pressed={filters.types.includes(type)}
+            >
+              {type}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <label className="checkbox-label primary-stock-filter" htmlFor="filter-hide-out-of-stock">
+        <span>
+          <strong>In stock only</strong>
+          <small>Hide empty spools</small>
+        </span>
+        <input
+          id="filter-hide-out-of-stock"
+          type="checkbox"
+          checked={filters.hideOutOfStock}
+          onChange={(event) =>
+            onChange({ ...filters, hideOutOfStock: event.target.checked })
+          }
+        />
+      </label>
 
       <div className="filters filters-secondary">
         <label htmlFor="filter-brand">
@@ -128,38 +198,6 @@ export function InventoryFilters({
           </select>
         </label>
 
-        <label htmlFor="filter-type">
-          Type
-          <select
-            id="filter-type"
-            value={filters.type}
-            onChange={(event) =>
-              onChange({ ...filters, type: event.target.value })
-            }
-          >
-            <option value="all">All types</option>
-            {options.types.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="checkbox-label" htmlFor="filter-hide-out-of-stock">
-          <span>
-            <strong>In stock only</strong>
-            <small>Hide empty spools</small>
-          </span>
-          <input
-            id="filter-hide-out-of-stock"
-            type="checkbox"
-            checked={filters.hideOutOfStock}
-            onChange={(event) =>
-              onChange({ ...filters, hideOutOfStock: event.target.checked })
-            }
-          />
-        </label>
       </div>
     </section>
   );

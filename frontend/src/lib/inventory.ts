@@ -37,11 +37,18 @@ export function filterFilaments(
       return false;
     }
 
-    if (filters.material !== "all" && filament.material !== filters.material) {
+    if (
+      filters.materials.length > 0 &&
+      !filters.materials.includes(filament.material)
+    ) {
       return false;
     }
 
-    if (filters.type !== "all" && filament.type !== filters.type) {
+    if (filters.types.length > 0 && !filters.types.includes(filament.type)) {
+      return false;
+    }
+
+    if (filters.colors.length > 0 && !filters.colors.includes(filament.color)) {
       return false;
     }
 
