@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AuthPanel } from "../components/AuthPanel";
 import { FilamentForm } from "../components/FilamentForm";
 import { InventoryFilters } from "../components/InventoryFilters";
-import { InventoryHeader } from "../components/InventoryHeader";
 import { InventoryList } from "../components/InventoryList";
 import { StatusBanner } from "../components/StatusBanner";
 import {
@@ -22,7 +21,6 @@ import {
 import {
   filterFilaments,
   getAvailableFilterOptions,
-  getTotalSpools,
   sortFilaments,
 } from "../lib/inventory";
 import {
@@ -68,7 +66,7 @@ function filtersStartOpen() {
 
 export function InventoryPage() {
   const [filaments, setFilaments] = useState<Filament[]>([]);
-  const [sort, setSort] = useState<SortState>({ field: "brand", direction: "asc" });
+  const [sort, setSort] = useState<SortState>({ field: "amount", direction: "asc" });
 
   const [filters, setFilters] = useState<InventoryFiltersState>(() => ({
     ...emptyFilters(),
@@ -191,8 +189,6 @@ export function InventoryPage() {
   const filteredFilaments = useMemo(() => {
     return sortFilaments(filterFilaments(filaments, filters), sort);
   }, [filaments, filters, sort]);
-
-  const totalSpools = useMemo(() => getTotalSpools(filaments), [filaments]);
 
   const hasActiveFilters =
     filters.brand !== "all" ||
@@ -386,12 +382,6 @@ export function InventoryPage() {
 
   return (
     <div className="page">
-      <InventoryHeader
-        totalSpools={totalSpools}
-        skuCount={filaments.length}
-        authorized={authorized}
-      />
-
       {!authorized ? (
         <AuthPanel
           passcodeInput={passcodeInput}

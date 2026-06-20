@@ -58,6 +58,26 @@ describe("InventoryPage", () => {
     });
   });
 
+  it("defaults the inventory to amount ascending", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ ok: true }))
+      .mockResolvedValueOnce(jsonResponse([]));
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    render(<InventoryPage />);
+
+    await user.type(screen.getByLabelText("Passcode"), "secret-token");
+    await user.click(screen.getByRole("button", { name: "Verify passcode" }));
+
+    expect(await screen.findByRole("button", { name: "Amount" })).toHaveAttribute(
+      "aria-sort",
+      "ascending"
+    );
+  });
+
   it("handles unauthorized create response by clearing editor mode", async () => {
     const fetchMock = vi
       .fn()
