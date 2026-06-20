@@ -30,6 +30,8 @@ The Worker serves static assets directly and invokes the Worker only for `/api/*
    - `npm run build`
 4. Publish from `backend/` with `npm run deploy`.
 
+For GitHub Actions deployment, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets, then run the **Deploy Filament Tracker to Cloudflare** workflow manually.
+
 ## CSV import from Google Sheets
 1. Export your Google Sheet as CSV.
 2. Generate SQL:
