@@ -78,4 +78,52 @@ describe("InventoryFilters", () => {
     await user.click(inStockOnly);
     expect(inStockOnly).toBeChecked();
   });
+
+  it("keeps colour families and chips in place when a colour is selected", async () => {
+    const user = userEvent.setup();
+
+    function FilterHarness() {
+      const [nextFilters, setFilters] = useState(filters);
+
+      return (
+        <InventoryFilters
+          filters={nextFilters}
+          options={{
+            brands: ["Aster"],
+            materials: ["PLA"],
+            types: ["Basic"],
+            colors: ["Blue", "Black", "White"],
+          }}
+          onChange={setFilters}
+          onReset={() => setFilters(filters)}
+          resultCount={3}
+          totalCount={3}
+        />
+      );
+    }
+
+    render(<FilterHarness />);
+
+    const groupsBefore = screen
+      .getAllByRole("group")
+      .map((group) => group.getAttribute("aria-label"));
+    const colorChipsBefore = screen
+      .getAllByRole("group")
+      .flatMap((group) =>
+        Array.from(group.querySelectorAll("button")).map((chip) => chip.textContent)
+      );
+
+    await user.click(screen.getByRole("button", { name: "Blue" }));
+
+    expect(screen.getAllByRole("group").map((group) => group.getAttribute("aria-label"))).toEqual(
+      groupsBefore
+    );
+    expect(
+      screen
+        .getAllByRole("group")
+        .flatMap((group) =>
+          Array.from(group.querySelectorAll("button")).map((chip) => chip.textContent)
+        )
+    ).toEqual(colorChipsBefore);
+  });
 });

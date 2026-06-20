@@ -1,5 +1,5 @@
 import { FunnelSimple, MagnifyingGlass, X } from "@phosphor-icons/react";
-import { colorFamily, colorHex } from "../lib/color";
+import { colorFamily, colorFamilyRank, colorHex } from "../lib/color";
 import type { FilterOptions, InventoryFiltersState } from "../types/inventory";
 
 type InventoryFiltersProps = {
@@ -33,11 +33,10 @@ export function InventoryFilters({
     filters.searchColor.trim() !== "" ||
     filters.hideOutOfStock;
 
-  const colorSuggestions = [...options.colors].sort((a, b) => {
-    const aSelected = filters.colors.includes(a);
-    const bSelected = filters.colors.includes(b);
-    return Number(bSelected) - Number(aSelected) || a.localeCompare(b);
-  });
+  // Keep chips fixed under the pointer: selection changes styling, never placement.
+  const colorSuggestions = [...options.colors].sort(
+    (a, b) => colorFamilyRank(a) - colorFamilyRank(b) || a.localeCompare(b)
+  );
   const colorGroups = colorSuggestions.reduce<Record<string, string[]>>(
     (groups, color) => {
       const family = colorFamily(color);
