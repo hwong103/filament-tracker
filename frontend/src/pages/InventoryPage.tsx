@@ -117,15 +117,17 @@ export function InventoryPage() {
     return true;
   }
 
-  async function loadInventory() {
+  async function loadInventory(token: string) {
     setOperation("load", "loading");
 
     try {
-      const data = await fetchFilaments();
+      const data = await fetchFilaments(token);
       setFilaments(data.map(normalizeFilament));
       setOperation("load", "success");
     } catch (error) {
-      setOperation("load", "error", toApiError(error, "load", "Failed to load inventory."));
+      const apiError = toApiError(error, "load", "Failed to load inventory.");
+      handleAuthFailure(apiError);
+      setOperation("load", "error", apiError);
     }
   }
 
@@ -143,6 +145,7 @@ export function InventoryPage() {
       await verifyPasscode(savedToken);
       setPasscode(savedToken);
       setOperation("authVerify", "success");
+      await loadInventory(savedToken);
     } catch (error) {
       clearAuthState();
       setOperation(
@@ -156,7 +159,6 @@ export function InventoryPage() {
   }
 
   useEffect(() => {
-    void loadInventory();
     void restoreSavedPasscode();
   }, []);
 
@@ -204,6 +206,7 @@ export function InventoryPage() {
       setPasscodeInput("");
       setOperation("authVerify", "success");
       setAuthReady(true);
+      await loadInventory(token);
     } catch (error) {
       clearAuthState();
       setOperation(
@@ -359,15 +362,7 @@ export function InventoryPage() {
     <div className="page">
       <InventoryHeader totalSpools={totalSpools} skuCount={filaments.length} />
 
-      <div className="controls-layout">
-        <InventoryFilters
-          filters={filters}
-          options={filterOptions}
-          onChange={setFilters}
-          onReset={resetFilters}
-          resultCount={filteredFilaments.length}
-          totalCount={filaments.length}
-        />
+      {!authorized ? (
         <AuthPanel
           passcodeInput={passcodeInput}
           authorized={authorized}
@@ -377,41 +372,20 @@ export function InventoryPage() {
           onVerify={() => void savePasscode()}
           onSignOut={signOut}
         />
-      </div>
-
-      {authorized ? (
-        <FilamentForm
-          draft={newDraft}
-          errors={newDraftErrors}
-          pending={operations.create.status === "loading"}
-          onDraftChange={(next) => {
-            setNewDraft(next);
-            setNewDraftErrors((prev) => ({
-              ...prev,
-              brand: next.brand.trim() ? undefined : prev.brand,
-              color: next.color.trim() ? undefined : prev.color,
-              type: next.type.trim() ? undefined : prev.type,
-              material: next.material.trim() ? undefined : prev.material,
-              amount: next.amount >= 0 ? undefined : prev.amount,
-            }));
-          }}
-          onSubmit={createFilamentEntry}
-          errorMessage={operations.create.error?.message ?? null}
-        />
       ) : null}
 
-      {operations.load.error ? (
+      {authorized && operations.load.error ? (
         <StatusBanner
           tone="error"
           title="Could not load inventory"
           message={operations.load.error.message}
           actionLabel="Retry"
-          onAction={() => void loadInventory()}
+          onAction={() => void loadInventory(passcode)}
           actionDisabled={operations.load.status === "loading"}
         />
       ) : null}
 
-      {operations.update.error ? (
+      {authorized && operations.update.error ? (
         <StatusBanner
           tone="error"
           title="Update failed"
@@ -419,7 +393,7 @@ export function InventoryPage() {
         />
       ) : null}
 
-      {operations.delete.error ? (
+      {authorized && operations.delete.error ? (
         <StatusBanner
           tone="error"
           title="Delete failed"
@@ -427,33 +401,83 @@ export function InventoryPage() {
         />
       ) : null}
 
-      <InventoryList
-        filaments={filteredFilaments}
-        loading={operations.load.status === "loading"}
-        authorized={authorized}
-        sort={sort}
-        onSort={toggleSort}
-        editingId={editingId}
-        editDraft={editDraft}
-        editErrors={editDraftErrors}
-        onEditDraftChange={setEditDraft}
-        onStartEdit={startEdit}
-        onCancelEdit={cancelEdit}
-        onSaveEdit={() => void saveEdit()}
-        pendingUpdateId={pendingUpdateId}
-        deleteConfirmId={deleteConfirmId}
-        pendingDeleteId={pendingDeleteId}
-        onRequestDelete={requestDelete}
-        onCancelDelete={cancelDelete}
-        onConfirmDelete={(id) => void confirmDelete(id)}
-        hasActiveFilters={hasActiveFilters}
-        onClearFilters={resetFilters}
-        onRefresh={() => void loadInventory()}
-      />
+      {authorized ? (
+        <div className="inventory-workspace">
+          <aside className="filter-rail">
+            <InventoryFilters
+              filters={filters}
+              options={filterOptions}
+              onChange={setFilters}
+              onReset={resetFilters}
+              resultCount={filteredFilaments.length}
+              totalCount={filaments.length}
+            />
+            <AuthPanel
+              passcodeInput={passcodeInput}
+              authorized={authorized}
+              checking={operations.authVerify.status === "loading"}
+              errorMessage={operations.authVerify.error?.message ?? null}
+              onPasscodeInputChange={setPasscodeInput}
+              onVerify={() => void savePasscode()}
+              onSignOut={signOut}
+            />
+          </aside>
 
-      <footer className="footer">
-        <span>Low stock threshold uses 0.25 spool units.</span>
-      </footer>
+          <main className="inventory-main">
+            <details className="editor-drawer">
+              <summary>Add a filament</summary>
+              <FilamentForm
+                draft={newDraft}
+                errors={newDraftErrors}
+                pending={operations.create.status === "loading"}
+                onDraftChange={(next) => {
+                  setNewDraft(next);
+                  setNewDraftErrors((prev) => ({
+                    ...prev,
+                    brand: next.brand.trim() ? undefined : prev.brand,
+                    color: next.color.trim() ? undefined : prev.color,
+                    type: next.type.trim() ? undefined : prev.type,
+                    material: next.material.trim() ? undefined : prev.material,
+                    amount: next.amount >= 0 ? undefined : prev.amount,
+                  }));
+                }}
+                onSubmit={createFilamentEntry}
+                errorMessage={operations.create.error?.message ?? null}
+              />
+            </details>
+
+            <InventoryList
+              filaments={filteredFilaments}
+              loading={operations.load.status === "loading"}
+              authorized={authorized}
+              sort={sort}
+              onSort={toggleSort}
+              editingId={editingId}
+              editDraft={editDraft}
+              editErrors={editDraftErrors}
+              onEditDraftChange={setEditDraft}
+              onStartEdit={startEdit}
+              onCancelEdit={cancelEdit}
+              onSaveEdit={() => void saveEdit()}
+              pendingUpdateId={pendingUpdateId}
+              deleteConfirmId={deleteConfirmId}
+              pendingDeleteId={pendingDeleteId}
+              onRequestDelete={requestDelete}
+              onCancelDelete={cancelDelete}
+              onConfirmDelete={(id) => void confirmDelete(id)}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={resetFilters}
+              onRefresh={() => void loadInventory(passcode)}
+            />
+          </main>
+        </div>
+      ) : null}
+
+      {authorized ? (
+        <footer className="footer">
+          <span>Low stock threshold uses 0.25 spool units.</span>
+        </footer>
+      ) : null}
     </div>
   );
 }

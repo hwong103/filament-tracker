@@ -70,10 +70,13 @@ async function requestJson<T>(
   return (await response.json()) as T;
 }
 
-export async function fetchFilaments(): Promise<Filament[]> {
+export async function fetchFilaments(token: string): Promise<Filament[]> {
   return requestJson<Filament[]>(
     "/api/filaments",
-    { method: "GET" },
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    },
     "load",
     "Failed to load inventory"
   );
