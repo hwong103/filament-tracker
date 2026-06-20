@@ -431,7 +431,11 @@ export function InventoryPage() {
             >
               <summary>
                 Filters
-                <span>{activeFilterCount > 0 ? `${activeFilterCount} active` : "All stock"}</span>
+                <span>
+                  {activeFilterCount > 0
+                    ? `${activeFilterCount} active · ${filteredFilaments.length} shown`
+                    : `${filteredFilaments.length} shown`}
+                </span>
               </summary>
               <InventoryFilters
                 filters={filters}

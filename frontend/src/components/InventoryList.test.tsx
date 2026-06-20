@@ -17,7 +17,7 @@ const filaments: Filament[] = [
 ];
 
 describe("InventoryList", () => {
-  it("renders labeled fields in mobile cards", () => {
+  it("renders compact spool summaries in mobile cards", () => {
     const { container } = render(
       <InventoryList
         filaments={filaments}
@@ -48,10 +48,10 @@ describe("InventoryList", () => {
     expect(mobileList).not.toBeNull();
 
     const mobileQueries = within(mobileList as HTMLElement);
-    expect(mobileQueries.getByText("Brand")).toBeInTheDocument();
-    expect(mobileQueries.getByText("Color")).toBeInTheDocument();
-    expect(mobileQueries.getByText("Type")).toBeInTheDocument();
-    expect(mobileQueries.getByText("Material")).toBeInTheDocument();
-    expect(mobileQueries.getByText("Amount")).toBeInTheDocument();
+    expect(mobileQueries.getByText("NovaFil")).toBeInTheDocument();
+    expect(mobileQueries.getByText("Ocean Blue")).toBeInTheDocument();
+    expect(mobileQueries.getByText("PLA")).toBeInTheDocument();
+    expect(mobileQueries.getByText("Basic")).toBeInTheDocument();
+    expect(mobileQueries.getByLabelText("0.65 spools")).toBeInTheDocument();
   });
 });

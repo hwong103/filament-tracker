@@ -1,4 +1,5 @@
 import {
+  CaretDown,
   Check,
   Cube,
   PencilSimple,
@@ -245,37 +246,34 @@ export function InventoryRow({
           </div>
         ) : (
           <>
-            <dl className="mobile-details">
-              <div>
-                <dt>Brand</dt>
-                <dd>{filament.brand}</dd>
+            <div className="mobile-card-summary">
+              <div className="mobile-card-identity">
+                <strong>{filament.brand}</strong>
+                {colorValue}
               </div>
-              <div>
-                <dt>Color</dt>
-                <dd>{colorValue}</dd>
+              <div className="mobile-card-amount" aria-label={`${filament.amount.toFixed(2)} spools`}>
+                <strong>{filament.amount.toFixed(2)}</strong>
+                <span>spools</span>
               </div>
-              <div>
-                <dt>Type</dt>
-                <dd>{typeValue}</dd>
-              </div>
-              <div>
-                <dt>Material</dt>
-                <dd>{materialValue}</dd>
-              </div>
-              <div>
-                <dt>Amount</dt>
-                <dd>
-                  <AmountBar amount={filament.amount} />
-                </dd>
-              </div>
-            </dl>
-            {lowStock ? (
-              <p className="stock-alert" role="status">
-                <WarningCircle size={14} weight="duotone" aria-hidden="true" />
-                Low stock
-              </p>
+            </div>
+            <div className="mobile-card-meta">
+              {materialValue}
+              {typeValue}
+              {lowStock ? (
+                <span className="stock-alert" role="status">
+                  <WarningCircle size={14} weight="duotone" aria-hidden="true" />
+                  Low stock
+                </span>
+              ) : null}
+            </div>
+            {actionCell ? (
+              <details className="mobile-actions">
+                <summary>
+                  Manage <CaretDown size={14} weight="bold" aria-hidden="true" />
+                </summary>
+                {actionCell}
+              </details>
             ) : null}
-            {actionCell}
           </>
         )}
       </article>
