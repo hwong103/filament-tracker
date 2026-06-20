@@ -33,7 +33,39 @@ export function InventoryFilters({
     filters.searchColor.trim() !== "" ||
     filters.hideOutOfStock;
 
-  const colorSuggestions = options.colors.slice(0, 12);
+  const colorSuggestions = [...options.colors].sort((a, b) => {
+    const aSelected = filters.colors.includes(a);
+    const bSelected = filters.colors.includes(b);
+    return Number(bSelected) - Number(aSelected) || a.localeCompare(b);
+  });
+  const primaryColors = colorSuggestions.slice(0, 6);
+  const additionalColors = colorSuggestions.slice(6);
+
+  function renderColorChip(color: string) {
+    const selected = filters.colors.includes(color);
+
+    return (
+      <button
+        key={color}
+        type="button"
+        className={`filter-chip color-filter-chip${selected ? " is-selected" : ""}`}
+        onClick={() =>
+          onChange({
+            ...filters,
+            colors: toggleSelection(filters.colors, color),
+          })
+        }
+        aria-pressed={selected}
+      >
+        <span
+          className="filter-color-dot"
+          style={{ backgroundColor: colorHex(color) }}
+          aria-hidden="true"
+        />
+        {color}
+      </button>
+    );
+  }
 
   return (
     <section className="panel filters-panel" aria-label="Inventory filters">
@@ -69,6 +101,7 @@ export function InventoryFilters({
             />
           </span>
         </label>
+        <p className="filter-helper">Select any combination to include matching spools.</p>
         {colorSuggestions.length > 0 ? (
           <div className="filter-chip-group" aria-label="Available colours">
             <button
@@ -79,28 +112,14 @@ export function InventoryFilters({
             >
               All colours
             </button>
-            {colorSuggestions.map((color) => (
-              <button
-                key={color}
-                type="button"
-                className={`filter-chip color-filter-chip${filters.colors.includes(color) ? " is-selected" : ""}`}
-                onClick={() =>
-                  onChange({
-                    ...filters,
-                    colors: toggleSelection(filters.colors, color),
-                  })
-                }
-                aria-pressed={filters.colors.includes(color)}
-              >
-                <span
-                  className="filter-color-dot"
-                  style={{ backgroundColor: colorHex(color) }}
-                  aria-hidden="true"
-                />
-                {color}
-              </button>
-            ))}
+            {primaryColors.map(renderColorChip)}
           </div>
+        ) : null}
+        {additionalColors.length > 0 ? (
+          <details className="more-filter-options">
+            <summary>More colours ({additionalColors.length})</summary>
+            <div className="filter-chip-group">{additionalColors.map(renderColorChip)}</div>
+          </details>
         ) : null}
       </div>
 

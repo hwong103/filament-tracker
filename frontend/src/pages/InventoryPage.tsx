@@ -152,7 +152,11 @@ export function InventoryPage() {
       setOperation(
         "authVerify",
         "error",
-        toApiError(error, "authVerify", "Saved passcode is invalid.")
+        {
+          source: "authVerify",
+          status: 401,
+          message: "Passcode rejected. Enter the current passcode.",
+        }
       );
     } finally {
       setAuthReady(true);
@@ -185,6 +189,14 @@ export function InventoryPage() {
     filters.colors.length > 0 ||
     filters.searchColor.trim() !== "" ||
     filters.hideOutOfStock;
+
+  const activeFilterCount =
+    filters.materials.length +
+    filters.types.length +
+    filters.colors.length +
+    (filters.brand !== "all" ? 1 : 0) +
+    (filters.searchColor.trim() ? 1 : 0) +
+    (filters.hideOutOfStock ? 1 : 0);
 
   function resetFilters() {
     setFilters(emptyFilters());
@@ -362,7 +374,11 @@ export function InventoryPage() {
 
   return (
     <div className="page">
-      <InventoryHeader totalSpools={totalSpools} skuCount={filaments.length} />
+      <InventoryHeader
+        totalSpools={totalSpools}
+        skuCount={filaments.length}
+        authorized={authorized}
+      />
 
       {!authorized ? (
         <AuthPanel
@@ -406,14 +422,20 @@ export function InventoryPage() {
       {authorized ? (
         <div className="inventory-workspace">
           <aside className="filter-rail">
-            <InventoryFilters
-              filters={filters}
-              options={filterOptions}
-              onChange={setFilters}
-              onReset={resetFilters}
-              resultCount={filteredFilaments.length}
-              totalCount={filaments.length}
-            />
+            <details className="filter-disclosure">
+              <summary>
+                Filters
+                <span>{activeFilterCount > 0 ? `${activeFilterCount} active` : "All stock"}</span>
+              </summary>
+              <InventoryFilters
+                filters={filters}
+                options={filterOptions}
+                onChange={setFilters}
+                onReset={resetFilters}
+                resultCount={filteredFilaments.length}
+                totalCount={filaments.length}
+              />
+            </details>
             <AuthPanel
               passcodeInput={passcodeInput}
               authorized={authorized}

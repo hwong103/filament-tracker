@@ -30,7 +30,9 @@ describe("InventoryPage", () => {
 
     render(<InventoryPage />);
 
-    expect(await screen.findByText("Unauthorized")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Passcode rejected. Enter the current passcode.")
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText("Add filament")).not.toBeInTheDocument();
   });
 

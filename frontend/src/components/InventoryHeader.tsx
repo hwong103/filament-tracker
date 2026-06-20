@@ -3,9 +3,14 @@ import { Package, RowsPlusBottom } from "@phosphor-icons/react";
 type InventoryHeaderProps = {
   totalSpools: number;
   skuCount: number;
+  authorized: boolean;
 };
 
-export function InventoryHeader({ totalSpools, skuCount }: InventoryHeaderProps) {
+export function InventoryHeader({
+  totalSpools,
+  skuCount,
+  authorized,
+}: InventoryHeaderProps) {
   return (
     <header className="hero">
       <div>
@@ -16,8 +21,10 @@ export function InventoryHeader({ totalSpools, skuCount }: InventoryHeaderProps)
           from any device.
         </p>
       </div>
-      <div className="stats" aria-label="Inventory summary">
-        <div className="stat">
+      <div className="stats" aria-label={authorized ? "Inventory summary" : "Inventory access"}>
+        {authorized ? (
+          <>
+            <div className="stat">
           <span className="stat-label">
             <Package size={16} weight="duotone" aria-hidden="true" /> Total spools
           </span>
@@ -29,6 +36,13 @@ export function InventoryHeader({ totalSpools, skuCount }: InventoryHeaderProps)
           </span>
           <strong>{skuCount}</strong>
         </div>
+          </>
+        ) : (
+          <div className="stat stat-locked">
+            <span className="stat-label">Private inventory</span>
+            <strong>Unlock to view stock</strong>
+          </div>
+        )}
       </div>
     </header>
   );
