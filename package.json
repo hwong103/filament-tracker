@@ -1,0 +1,14 @@
+{
+  "name": "filament-tracker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "prepare": "node scripts/setup-git-hooks.mjs",
+    "test:hooks": "node --test scripts/setup-git-hooks.test.mjs",
+    "check": "npm run test:hooks && npm --prefix backend run test:run && npm --prefix backend exec -- tsc -p backend/tsconfig.json --noEmit --pretty false && npm --prefix frontend run test:run && npm --prefix frontend exec -- tsc -p frontend/tsconfig.json --noEmit --pretty false && npm --prefix frontend run build"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
