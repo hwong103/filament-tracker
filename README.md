@@ -51,6 +51,18 @@ For GitHub Actions deployment, add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUN
 - Backend: `cd backend` then `npm run dev`
 - Frontend: `cd frontend` then `npm run dev`
 
+## Verification
+Use Node 22, then install each npm manifest and run the aggregate check:
+```sh
+nvm use
+npm ci
+npm ci --prefix backend
+npm ci --prefix frontend
+npm run check
+```
+
+The check runs hook setup tests, both TypeScript checks, both Vitest suites, and the frontend production build. GitHub Actions runs the same command for pull requests and pushes to `main`.
+
 ## Notes
 - The app opens on an unlock screen. Inventory reads and edits require the
   shared passcode stored in `EDIT_TOKEN`.
